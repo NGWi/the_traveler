@@ -51,7 +51,7 @@ function App() {
     const newLocations = locations.filter((_, i) => i !== index);
     setLocations(newLocations);
   };
-
+  
   return (
     <div className="App" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>Greetings, Traveler</h1>
@@ -100,8 +100,8 @@ function App() {
                   }}
                   placeholder={isEndPoint && index + 2 === locations.length ? 'Enter ending location' 
                     : `Location ${index + 2}`}
-                  style={{ 
-                    flex: 1, 
+                  style={{
+                    width: '100%',
                     padding: '8px',
                     border: isEndPoint ? '2px solid #007bff' : '2px solid #ddd',
                     borderRadius: isEndPoint && '4px',
@@ -151,6 +151,39 @@ function App() {
             </span>
           </label>
         </div>
+        {/* Add Location Button */}
+        <button
+          type="button"
+          onClick={addLocation}
+          style={{ 
+            width: '100%',
+            margin: '10px 0',
+            backgroundColor: locations.length >= MAX_LOCATIONS ? '#ccc' : '#28a745',
+            color: 'white',
+            padding: '10px',
+            cursor: locations.length >= MAX_LOCATIONS ? 'not-allowed' : 'pointer'
+          }}
+          disabled={locations.length >= MAX_LOCATIONS}
+        >
+          {locations.length >= MAX_LOCATIONS ? 'Maximum Reached' : 'Add Another Location +'}
+        </button>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ 
+            width: '100%',
+            background: loading ? '#ccc' : '#007bff', 
+            color: 'white',
+            padding: '8px',
+            fontSize: '1.03em',
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {loading ? 'Calculating...' : 'Find Optimal Route'}
+        </button>
+      </form>
 
         {/* Tips Section */}
         <div style={{ 
@@ -178,38 +211,6 @@ function App() {
           </ul>
         </div>
 
-        {/* Add Location Button */}
-        <button
-          type="button"
-          onClick={addLocation}
-          style={{ 
-            width: '100%',
-            margin: '10px 0',
-            backgroundColor: locations.length >= MAX_LOCATIONS ? '#ccc' : '#28a745',
-            color: 'white',
-            padding: '10px',
-            cursor: locations.length >= MAX_LOCATIONS ? 'not-allowed' : 'pointer'
-          }}
-          disabled={locations.length >= MAX_LOCATIONS}
-        >
-          {locations.length >= MAX_LOCATIONS ? 'Maximum Reached' : 'Add Location +'}
-        </button>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ 
-            width: '100%',
-            background: loading ? '#ccc' : '#007bff', 
-            color: 'white',
-            padding: '10px',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Calculating...' : 'Find Optimal Route'}
-        </button>
-      </form>
 
       {result && (
         <div style={{ 
