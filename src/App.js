@@ -2,23 +2,22 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 function App() {
-  const [locations, setLocations] = useState(['']);
+  const [locations, setLocations] = useState(['', '']);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [useLastAsEnd, setUseLastAsEnd] = useState(false);
   const MAX_LOCATIONS = 20;
-  const WARNING_THRESHOLD = 15;
 
   const validLocationsCount = locations.filter(loc => loc.trim() !== '').length;
 
   const getCounterColor = () => {
     if (validLocationsCount >= MAX_LOCATIONS) return '#dc3545';
-    if (validLocationsCount >= WARNING_THRESHOLD) return '#ffc107';
+    if (validLocationsCount >= 15) return '#ffc107';
     return '#28a745';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     const cleanLocations = locations.filter(loc => loc.trim() !== '');
     
     if (cleanLocations.length < 2) {
@@ -26,60 +25,48 @@ function App() {
       return;
     }
     
-    if (cleanLocations.length > MAX_LOCATIONS) {
-      alert(`Maximum ${MAX_LOCATIONS} locations allowed`);
-      return;
-    }
-
     setLoading(true);
-
-    const backendUrl = process.env.NODE_ENV === 'production'
-      ? process.env.REACT_APP_BACKEND_PROD
-      : process.env.REACT_APP_BACKEND_DEV;
-
+    
     try {
-      const response = await axios.post(backendUrl, {
-        locations: cleanLocations
+      const response = await axios.post(process.env.REACT_APP_BACKEND_DEV, {
+        locations: cleanLocations,
+        designated_end: useLastAsEnd
       });
       
       setResult(response.data);
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 
-                          error.message || 
-                          'Failed to calculate route';
-      alert(`Error: ${errorMessage}`);
+      alert(`Error: ${error.response?.data?.error || error.message}`);
     }
     
     setLoading(false);
   };
 
   const addLocation = () => {
-    if (locations.length >= MAX_LOCATIONS) {
-      alert(`Maximum ${MAX_LOCATIONS} locations allowed`);
-      return;
-    }
+    if (locations.length >= MAX_LOCATIONS) return;
     setLocations([...locations, '']);
+  };
+
+  const removeLocation = (index) => {
+    if (locations.length <= 2) return;
+    const newLocations = locations.filter((_, i) => i !== index);
+    setLocations(newLocations);
   };
 
   return (
     <div className="App" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>Greetings, Traveler</h1>
       
-      <div style={{
-        marginBottom: '20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
+      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ color: getCounterColor(), fontWeight: 'bold' }}>
           Locations: {validLocationsCount}/{MAX_LOCATIONS}
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Start Location */}
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Starting Location (Start & End Point)
+            Starting Location
           </label>
           <input
             type="text"
@@ -100,59 +87,73 @@ function App() {
           />
         </div>
 
-        {locations.slice(1).map((location, index) => (
-          <div key={index + 1} style={{ marginBottom: '10px' }}>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => {
-                const newLocations = [...locations];
-                newLocations[index + 1] = e.target.value;
-                setLocations(newLocations);
-              }}
-              placeholder={`Location ${index + 2}`}
-              style={{ 
-                width: '100%', 
-                padding: '8px',
-                border: validLocationsCount >= MAX_LOCATIONS ? '1px solid #dc3545' : '1px solid #ddd'
-              }}
-            />
-          </div>
-        ))}
+        {/* Other Locations */}
+        {locations.slice(1).map((location, index) => {
+          const isEndPoint = useLastAsEnd && index === locations.length - 2;
+          return (
+            <div key={index + 1} style={{ marginBottom: '10px', position: 'relative' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => {
+                    const newLocations = [...locations];
+                    newLocations[index + 1] = e.target.value;
+                    setLocations(newLocations);
+                  }}
+                  placeholder={`Location ${index + 2}`}
+                  style={{ 
+                    flex: 1, 
+                    padding: '8px',
+                    border: isEndPoint ? '2px solid #007bff' : '2px solid #ddd',
+                    backgroundColor: isEndPoint ? '#f0fff0' : 'white'
+                  }}
+                />
+                
+                {/* Button to remove Location */}
+                {locations.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => removeLocation(index + 1)}
+                    style={{ 
+                      background: '#dc3545', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '4px', 
+                      padding: '5px 10px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
 
-        <div style={{ margin: '15px 0' }}>
-          <button
-            type="button"
-            onClick={addLocation}
-            style={{ 
-              width: '100%',
-              marginBottom: '10px',
-              backgroundColor: locations.length >= MAX_LOCATIONS ? '#ccc' : '#28a745',
-              color: 'white',
-              padding: '10px',
-              cursor: locations.length >= MAX_LOCATIONS ? 'not-allowed' : 'pointer'
-            }}
-            disabled={locations.length >= MAX_LOCATIONS}
-          >
-            {locations.length >= MAX_LOCATIONS ? 'Maximum Locations Reached' : 'Add Another Location +'}
-          </button>
-          
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ 
-              width: '100%',
-              background: loading ? '#ccc' : '#007bff', 
-              color: 'white',
-              padding: '12px',
-              fontSize: '1.1em',
-              cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Calculating Optimal Route...' : 'Find Fastest Route'}
-          </button>
+        {/* End Point Toggle */}
+        <div style={{ 
+          margin: '10px 0', 
+          padding: '10px', 
+          border: '1px solid #eee', 
+          borderRadius: '4px',
+          backgroundColor: useLastAsEnd ? '#f8f9fa' : 'transparent'
+        }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input
+              type="checkbox"
+              checked={useLastAsEnd}
+              onChange={(e) => setUseLastAsEnd(e.target.checked)}
+            />
+            <span style={{ fontWeight: useLastAsEnd ? 'bold' : 'normal' }}>
+              Use last location as end point
+              {useLastAsEnd && locations.length > 1 && ` (${locations[locations.length - 1] || 'empty'})`}
+            </span>
+          </label>
         </div>
 
+        {/* Tips Section */}
         <div style={{ 
           color: '#666', 
           fontSize: '0.9em',
@@ -162,16 +163,53 @@ function App() {
         }}>
           <p>Tips:</p>
           <ul>
-            <li>The first location will be both the starting and ending point.
-                <br /> We calculate the optimal full loop for you.
+            <li>
+              {useLastAsEnd ? 
+                "The first location is the starting point, the last location is the ending point." :
+                "Unless you check the box above, the first location is both the starting and ending point, and we'll calculate the optimal fullloop."}
+              <br />
+              {useLastAsEnd && "We'll find the optimal path between them."}
             </li>
             <li> The order that you place all the other locations doesn't matter.
-              <br />We will do all the hard work for you.
+              <br />We'll do all the hard work for you.
             </li>
             <li>Minimum 2 locations required</li>
             <li>Maximum {MAX_LOCATIONS} locations allowed</li>
           </ul>
         </div>
+
+        {/* Add Location Button */}
+        <button
+          type="button"
+          onClick={addLocation}
+          style={{ 
+            width: '100%',
+            margin: '10px 0',
+            backgroundColor: locations.length >= MAX_LOCATIONS ? '#ccc' : '#28a745',
+            color: 'white',
+            padding: '10px',
+            cursor: locations.length >= MAX_LOCATIONS ? 'not-allowed' : 'pointer'
+          }}
+          disabled={locations.length >= MAX_LOCATIONS}
+        >
+          {locations.length >= MAX_LOCATIONS ? 'Maximum Reached' : 'Add Location +'}
+        </button>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ 
+            width: '100%',
+            background: loading ? '#ccc' : '#007bff', 
+            color: 'white',
+            padding: '12px',
+            fontSize: '1.1em',
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {loading ? 'Calculating...' : 'Find Optimal Route'}
+        </button>
       </form>
 
       {result && (
@@ -183,24 +221,17 @@ function App() {
           border: '1px solid #dee2e6'
         }}>
           <h2 style={{ color: '#2c3e50', marginBottom: '15px' }}>Optimal Route</h2>
-          <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
-            {result.optimal_route.map((location, index) => (
-                <li key={index} style={{ margin: '8px 0' }}>
-                    {index === 0 && 'Start: '}
-                    {location}
-                </li>
+          <ol style={{ paddingLeft: '20px' }}>
+            {result.optimal_route.map((loc, i) => (
+              <li key={i} style={{ margin: '8px 0' }}>
+                {i === 0 && 'Start: '}
+                {loc}
+                {i === result.optimal_route.length - 1 && ` (${useLastAsEnd ? 'End' : 'Return to Start'})`}
+              </li>
             ))}
-            {/* Add the starting location again at the end */}
-            <li style={{ margin: '8px 0' }}>
-                End: {result.optimal_route[0]} {/* Assuming the first location is the starting point */}
-            </li>
-        </ol>
-          <p style={{ 
-            fontWeight: 'bold', 
-            marginTop: '15px',
-            color: '#007bff'
-          }}>
-            Total Travel Time: {result.total_time}
+          </ol>
+          <p style={{ fontWeight: 'bold', color: '#007bff', marginTop: '15px' }}>
+            Total Time: {result.total_time}
           </p>
         </div>
       )}
