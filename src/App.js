@@ -197,7 +197,7 @@ function App() {
           <ul>
             <li>
               {useLastAsEnd ? 
-                "The first location is the starting point, the last location is the ending point." :
+                "The first location is the starting point, the last location is the ending point. " :
                 "Unless you check the box above, the first location is both the starting and ending point, \
                 and we'll calculate the optimal full loop."}
 
