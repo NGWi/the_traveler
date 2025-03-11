@@ -34,7 +34,8 @@ function App() {
 
     try {
       const response = await axios.post(backendUrl, {
-        locations: cleanLocations
+        locations: cleanLocations,
+        designated_end: useLastAsEnd
       });
       
       setResult(response.data);
