@@ -65,9 +65,6 @@ function App() {
       <form onSubmit={handleSubmit}>
         {/* Start Location */}
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Starting Location
-          </label>
           <input
             type="text"
             value={locations[0]}
@@ -101,11 +98,13 @@ function App() {
                     newLocations[index + 1] = e.target.value;
                     setLocations(newLocations);
                   }}
-                  placeholder={`Location ${index + 2}`}
+                  placeholder={isEndPoint && index + 2 === locations.length ? 'Enter ending location' 
+                    : `Location ${index + 2}`}
                   style={{ 
                     flex: 1, 
                     padding: '8px',
                     border: isEndPoint ? '2px solid #007bff' : '2px solid #ddd',
+                    borderRadius: isEndPoint && '4px',
                     backgroundColor: isEndPoint ? '#f0fff0' : 'white'
                   }}
                 />
@@ -166,8 +165,9 @@ function App() {
             <li>
               {useLastAsEnd ? 
                 "The first location is the starting point, the last location is the ending point." :
-                "Unless you check the box above, the first location is both the starting and ending point, and we'll calculate the optimal fullloop."}
-              <br />
+                "Unless you check the box above, the first location is both the starting and ending point, \
+                and we'll calculate the optimal full loop."}
+
               {useLastAsEnd && "We'll find the optimal path between them."}
             </li>
             <li> The order that you place all the other locations doesn't matter.
@@ -203,8 +203,7 @@ function App() {
             width: '100%',
             background: loading ? '#ccc' : '#007bff', 
             color: 'white',
-            padding: '12px',
-            fontSize: '1.1em',
+            padding: '10px',
             cursor: loading ? 'not-allowed' : 'pointer'
           }}
         >
@@ -225,8 +224,8 @@ function App() {
             {result.optimal_route.map((loc, i) => (
               <li key={i} style={{ margin: '8px 0' }}>
                 {i === 0 && 'Start: '}
+                {i === result.optimal_route.length - 1 && 'End: '}
                 {loc}
-                {i === result.optimal_route.length - 1 && ` (${useLastAsEnd ? 'End' : 'Return to Start'})`}
               </li>
             ))}
           </ol>
