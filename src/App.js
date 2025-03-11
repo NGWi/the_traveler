@@ -27,10 +27,14 @@ function App() {
     
     setLoading(true);
     
+    const backendUrl = process.env.NODE_ENV === 'production'
+      ? process.env.REACT_APP_BACKEND_PROD
+      : process.env.REACT_APP_BACKEND_DEV;
+
+
     try {
-      const response = await axios.post(process.env.REACT_APP_BACKEND_DEV, {
-        locations: cleanLocations,
-        designated_end: useLastAsEnd
+      const response = await axios.post(backendUrl, {
+        locations: cleanLocations
       });
       
       setResult(response.data);
