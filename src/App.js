@@ -64,7 +64,7 @@ function App() {
 
       <form onSubmit={handleSubmit}>
         {/* Start Location */}
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '10px', display: 'flex' }}>
           <input
             type="text"
             value={locations[0]}
