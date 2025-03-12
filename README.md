@@ -1,8 +1,8 @@
 This project is live at https://the-traveler-fucj.onrender.com/ (Mar 10, 2025)
 
-Next planned improvement: Allow the user to specify a different ending spot instead of a full loop.
+Future plan: Integrate with Google Maps to show the completed route.
 
-Bigger plan: Integrate with Google Maps to show the completed route.
+![image](https://github.com/user-attachments/assets/e3cfcd7b-dfd3-4c12-adbc-bbed2dfc1b63)
 
 # Getting Started with Create React App
 
