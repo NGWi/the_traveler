@@ -58,8 +58,12 @@ function App() {
         designated_end: useLastAsEnd,
       });
 
-      console.log("API Response:", response.data);
-      setResult(response.data);
+
+      if (response.data.error) {
+        alert(response.data.error);
+      } else {
+        setResult(response.data);
+      }
     } catch (error) {
       alert(`Error: ${error.response?.data?.error || error.message}`);
     }
